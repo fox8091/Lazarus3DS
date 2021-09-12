@@ -1,7 +1,7 @@
 # GodMode9 "Lazarus3DS Script"
 # Attempt to revive a bricked NAND with a donor CTRNAND
-# last changed: 20170909
-# author: AnalogMan
+# last changed: 20210912
+# author: AnalogMan, fox8091
 
 # Tell user what script does and ask for confirmation
 set ERRORMSG "Aborted by user."
@@ -9,7 +9,7 @@ ask "This script revives bricked consoles and\nattempts to recover what data it 
 
 # Check that proper files exist
 # Looks for donor ctrnand_full.bin file with naming scheme:
-# ctrnand_[o/n]3ds_[usa/eur/jpn]_[retail/dev].bin
+# ctrnand_[o/n]3ds_[usa/eur/jpn/chn/twn/kor]_[retail/dev].bin
 
 set ERRORMSG "CTRNAND file not found!"
 find 0:/pit/ctrnand_?3ds_???_*.bin CTRNAND
@@ -78,6 +78,10 @@ cp -w -o -s -n 1:/rw/sys/SecureInfo_A 0:/pit/SecureInfo_A
 cp -w -o -s -n 1:/rw/sys/SecureInfo_B 0:/pit/SecureInfo_B
 cp -w -o -s -n 1:/rw/sys/SecureInfo_C 0:/pit/SecureInfo_C
 
+# Attempting to copy LocalFriendCodeSeed if present
+cp -w -o -s -n 1:/rw/sys/LocalFriendCodeSeed_A 0:/pit/LocalFriendCodeSeed_A
+cp -w -o -s -n 1:/rw/sys/LocalFriendCodeSeed_B 0:/pit/LocalFriendCodeSeed_B
+
 # Attempting to copy sysdata files to SD for restoring later
 cp -w -o -s -n 1:/data/$[SYSID0]/sysdata/00010017/00000000 0:/pit/configsave.bin
 cp -w -o -s -n 1:/data/$[SYSID0]/sysdata/00010032/00000000 0:/pit/friendsave.bin
@@ -113,8 +117,6 @@ cp -w -o -s -n 2:/shared2/0000 0:/pit/sounds.bin
 # Attempting to copy TWLP Photos
 cp -w -o -s -n 3:/photo/DCIM 0:/pit/DCIM
 
-# Skipping LocalFriendCodeSeed_B as it's regenerated upon boot
-
 # Fix NAND_HDR
 cp -w -n $[HDR] S:/nand.bin
 
@@ -135,25 +137,74 @@ cp -w -n $[CTRNAND] S:/ctrnand_full.bin
 
 # Attempt to restore recovered data
 cp -w -o -s -n 0:/pit/movable.sed 1:/private/movable.sed
-cp -w -o -s -n 0:/pit/ticket.db 1:/dbs/ticket.db
-cp -w -o -s -n 0:/pit/SecureInfo_A 1:/rw/sys/SecureInfo_A
-cp -w -o -s -n 0:/pit/SecureInfo_B 1:/rw/sys/SecureInfo_B
-cp -w -o -s -n 0:/pit/SecureInfo_C 1:/rw/sys/SecureInfo_C
+
+fget 1:/rw/sys/SecureInfo_A@100:1 SIREG
+fget -o -s 0:/pit/SecureInfo_A@100:1 SDREG
+fget -o -s 0:/pit/SecureInfo_B@100:1 SDREG1
+fget -o -s 0:/pit/SecureInfo_C@100:1 SDREG2
+
+if chk $[SIREG] $[SDREG]
+	cp -w -o -s -n 0:/pit/SecureInfo_A 1:/rw/sys/SecureInfo_A
+elif chk $[SIREG] $[SDREG1]
+	cp -w -o -s -n 0:/pit/SecureInfo_B 1:/rw/sys/SecureInfo_B
+	rm 1:/rw/sys/SecureInfo_A
+end
+if chk $[SIREG] $[SDREG2]
+	cp -w -o -s -n 0:/pit/SecureInfo_C 1:/rw/sys/SecureInfo_C
+end
+
+# Verify ticket.db has appropriate tickets
+if find 0:/pit/ticket.db NULL
+	imgmount 0:/pit/ticket.db
+	if find T:/system/0004003000008202.????????.tik NULL
+		set TIKREG 0
+	elif find T:/system/0004003000008F02.????????.tik NULL
+		set TIKREG 1
+	elif find T:/system/0004003000009802.????????.tik NULL
+		set TIKREG 2
+	elif find T:/system/000400300000A102.????????.tik NULL
+		set TIKREG 4
+	elif find T:/system/000400300000A902.????????.tik NULL
+		set TIKREG 5
+	elif find T:/system/000400300000B102.????????.tik NULL
+		set TIKREG 6
+	end
+end
+
+# Attempt restoring ticket.db
+if chk $[SIREG] $[TIKREG]
+	cp -w -o -s -n 0:/pit/ticket.db 1:/dbs/ticket.db
+end
+
+if find 0:/pit/LocalFriendCodeSeed_A NULL
+	cp -w -o -s -n 0:/pit/LocalFriendCodeSeed_A 1:/rw/sys/LocalFriendCodeSeed_A
+	rm 1:/rw/sys/LocalFriendCodeSeed_B
+elif find 0:/pit/LocalFriendCodeSeed_B NULL
+	cp -w -o -s -n 0:/pit/LocalFriendCodeSeed_B 1:/rw/sys/LocalFriendCodeSeed_B
+end
+
 cp -w -o -s -n 0:/pit/seedsave.bin 1:/data/$[SYSID0]/sysdata/0001000f/00000000
 cp -w -o -s -n 0:/pit/configsave.bin 1:/data/$[SYSID0]/sysdata/00010017/00000000
 cp -w -o -s -n 0:/pit/friendsave.bin 1:/data/$[SYSID0]/sysdata/00010032/00000000
 cp -w -o -s -n 0:/pit/activitylog.bin 1:/data/$[SYSID0]/sysdata/00010022/00000000
 
-# Can't tell which region the console is, so copying this data to all three regions
-cp -w -o -s -n 0:/pit/miiplaza.bin 1:/data/$[SYSID0]/sysdata/00020208/00000000
-cp -w -o -s -n 0:/pit/miiplaza.bin 1:/data/$[SYSID0]/sysdata/00020218/00000000
-cp -w -o -s -n 0:/pit/miiplaza.bin 1:/data/$[SYSID0]/sysdata/00020228/00000000
-cp -w -o -s -n 0:/pit/faceraiders.bin 1:/data/$[SYSID0]/sysdata/0002020d/00000000
-cp -w -o -s -n 0:/pit/faceraiders.bin 1:/data/$[SYSID0]/sysdata/0002021d/00000000
-cp -w -o -s -n 0:/pit/faceraiders.bin 1:/data/$[SYSID0]/sysdata/0002022d/00000000
-cp -w -o -s -n 0:/pit/argames.bin 1:/data/$[SYSID0]/sysdata/0002020e/00000000
-cp -w -o -s -n 0:/pit/argames.bin 1:/data/$[SYSID0]/sysdata/0002021e/00000000
-cp -w -o -s -n 0:/pit/argames.bin 1:/data/$[SYSID0]/sysdata/0002022e/00000000
+# Restoring system app sys data
+if chk $[SIREG] 0
+    set CHR 0
+elif chk $[SIREG] 1
+    set CHR 1
+elif chk $[SIREG] 2
+    set CHR 2
+elif chk $[SIREG] 4
+    set CHR 6
+elif chk $[SIREG] 5
+    set CHR 7
+elif chk $[SIREG] 6
+    set CHR 8
+end
+cp -w -o -s -n 0:/pit/miiplaza.bin 1:/data/$[SYSID0]/sysdata/000202$[CHR]8/00000000
+cp -w -o -s -n 0:/pit/faceraiders.bin 1:/data/$[SYSID0]/sysdata/000202$[CHR]d/00000000
+cp -w -o -s -n 0:/pit/argames.bin 1:/data/$[SYSID0]/sysdata/000202$[CHR]e/00000000
 
 # Restoring ext data
 cp -w -o -s -n 0:/pit/01 1:/data/$[SYSID0]/extdata/00048000/f0000001 # Photos

@@ -5,7 +5,8 @@ A set of GodMode9 scripts to restore bricked 3DS consoles. Named after the [Laza
 1. A method to boot GodMode9.firm, be that NTRBootHax, hard mod, or pre-installed hack.
 
 2. The following files:
-    1. Prepared donor `ctrnand.bin`, `nand_hdr.bin`, `twln.bin`, `twlp.bin` files & SHAs for your console (o3DS / n3DS + USA / EUR / JPN + retail / dev).
+    1. Prepared donor `ctrnand.bin`, `nand_hdr.bin`, `twln.bin`, `twlp.bin` files & SHAs for your console (o3DS / n3DS + USA / EUR / JPN / CHN / TWN / KOR + retail / dev).
+	   KOR, CHN, and TWN need different twln.bin files, as they require a different TWLFontTable, and in the case of CHN and KOR, a different DS Download Play client.
 
     2. A clean `sector0x96.bin`, `boot9strap.bin`, `sighax_hdr.bin` & SHA for your type of console (retail / dev).
 
@@ -31,11 +32,11 @@ A set of GodMode9 scripts to restore bricked 3DS consoles. Named after the [Laza
 4. Once `Lazarus3DS` finishes the script will make Luma3DS the new boot.firm, copy Luma3DS to NAND, install boot9strap, remove all Lazarus3DS support files and restart the 3DS.
 
 ##### Notes
-Consoles revived in this fashion will not be able to uninstall CFW. Uninstalling CFW will render the console unable to boot once more.
+Consoles revived in this fashion will not be able to uninstall CFW without specially prepared CTRNAND images. Uninstalling CFW will render the console unable to boot once more.
 
-n3DS consoles may have poor quality 3D following the Lazarus3DS-Emergency script. Use Super-Stable 3D Calibration in System Settings to rectify for now.
+To prepare a CTRNAND image to allow CFW uninstallation, properly signed files are needed for movable.sed, SecureInfo_A, and LocalFriendCodeSeed_B.
 
-If you would like to create donor files for use with this script, please see the Lazarus3DS-Prep script and the notes contained within it for instructions.
+If you would like to create donor files for use with this script, please contact fox8091 on the [Nintendo Homebrew Discord](https://discord.gg/C29hYvh) for instructions.
 
 ##### Credits
 Special thanks go to [d0k3](https://gbatemp.net/members/d0k3.29073/) for the splendid tool GodMode9 and intimate knowledge of the NAND layout and signature verifications, without which this wouldn't be possible.
