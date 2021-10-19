@@ -189,17 +189,17 @@ cp -w -o -s -n 0:/pit/friendsave.bin 1:/data/$[SYSID0]/sysdata/00010032/00000000
 cp -w -o -s -n 0:/pit/activitylog.bin 1:/data/$[SYSID0]/sysdata/00010022/00000000
 
 # Restoring system app sys data
-if chk $[SIREG] 0
+if chk $[SIREG] 00
     set CHR 0
-elif chk $[SIREG] 1
+elif chk $[SIREG] 01
     set CHR 1
-elif chk $[SIREG] 2
+elif chk $[SIREG] 02
     set CHR 2
-elif chk $[SIREG] 4
+elif chk $[SIREG] 04
     set CHR 6
-elif chk $[SIREG] 5
+elif chk $[SIREG] 05
     set CHR 7
-elif chk $[SIREG] 6
+elif chk $[SIREG] 06
     set CHR 8
 end
 cp -w -o -s -n 0:/pit/miiplaza.bin 1:/data/$[SYSID0]/sysdata/000202$[CHR]8/00000000
