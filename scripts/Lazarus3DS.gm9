@@ -114,6 +114,10 @@ cp -w -o -s -n 2:/title/00030004 0:/pit/00030004
 # Attempting to copy TWL Sounds
 cp -w -o -s -n 2:/shared2/0000 0:/pit/sounds.bin
 
+# Attempting to copy TWL setup logs
+cp -w -o -s -n 2:/sys/log/inspect.log 0:/pit/inspect.log
+cp -w -o -s -n 2:/sys/log/product.log 0:/pit/product.log
+
 # Attempting to copy TWLP Photos
 cp -w -o -s -n 3:/photo/DCIM 0:/pit/DCIM
 
@@ -220,6 +224,10 @@ cp -w -o -s -n 0:/pit/00030004 2:/title/00030004
 
 # Restoring TWL Sounds
 cp -w -o -s -n 0:/pit/sounds.bin 2:/shared2/0000
+
+# Restoring TWL setup logs
+cp -w -o -s -n 0:/pit/inspect.log 2:/sys/log/inspect.log
+cp -w -o -s -n 0:/pit/product.log 2:/sys/log/product.log
 
 # Restoring TWLP photos
 cp -w -o -s -n 0:/pit/DCIM 3:/photo/DCIM
